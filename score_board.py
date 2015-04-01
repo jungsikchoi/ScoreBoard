@@ -8,7 +8,7 @@ import subprocess
 import re
 
 # Configuration
-UPLOAD_FOLDER = '/tmp/source_code'
+UPLOAD_FOLDER = 'source_code'
 ALLOWED_EXTENSIONS = set(['c', 'h'])
 DATABASE='score_board.db'
 
@@ -93,6 +93,9 @@ def test_source(filename):
     for line in std_err.readlines() :
         if line.find('error') > 0:
             flash('Compile Error!!')
+            cmd = 'rm -rf ' + UPLOAD_FOLDER + '/*'
+            print cmd
+            std_out, std_err = execute(cmd)
             return redirect(url_for('show_entries'))
 
     cmd = 'time ' + UPLOAD_FOLDER + '/nqueens'
@@ -111,7 +114,7 @@ def test_source(filename):
         except:
             pass
 
-    cmd = 'rm -rf ' + UPLOAD_FOLDER + '*'
+    cmd = 'rm -rf ' + UPLOAD_FOLDER + '/*'
     print cmd
     std_out, std_err = execute(cmd)
 
@@ -125,7 +128,10 @@ def get_user_id():
     db = get_db()
     cur = db.execute(query)
     max_id = cur.fetchall()
-    user_id = int((max_id[0])[0]) + 1
+    try:
+        user_id = int((max_id[0])[0]) + 1
+    except TypeError:
+        user_id = 1
     return user_id
 
 def add_entry(_id, _time):
