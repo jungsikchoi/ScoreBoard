@@ -1,0 +1,13 @@
+<!doctype html>
+    <title>Multicore Systems</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" type="image/gif" href="http://arcs.skku.edu/images/skku-favicon.ico">
+    <div class="page">
+        <a href="{{ url_for('show_entries') }}"><img src="http://www.charbase.com/images/glyph/9819" align="left" height="100"/></a>
+        <h1>3D N<sup>2</sup>-Queens Problem</h1>
+        {% for message in get_flashed_messages() %}
+        <div class="flash">{{ message }}</div>
+        {% endfor %}
+        {% block body %}{% endblock %}
+    </div>
+    <p><a href="http://csl.skku.edu/SSE3054S15/Overview">(SSE3054) Multicore Systems</p></a>

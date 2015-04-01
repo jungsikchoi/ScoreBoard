@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+{% block body %}
+<p>Here is a list of the Best Ten!</p>
+<p>Your result can be included in this list.
+Try to put your source code to test.</p>
+<br/>
+<table id="t01">
+    <tr>
+        <th>Rank</th>
+        <th>ID</th>
+        <th>Elapsed Time</th>
+    </tr>
+    {% set count = 0 %}
+    {% for entry in entries%}
+    {% set count = count + 1 %}
+    <tr>
+        <td id="rank">{{ count }}</td>
+        <td id="id">#{{ entry.user_id }}</td>
+        <td id="time">{{ entry.elapsed_time }} sec</td>
+    </tr>
+    {% else %}
+    <tr>
+        <td>Unbelievable.  No entries here so far</td>
+    </tr>
+    {% endfor %}
+</table>
+<p><a href="{{ url_for('upload_source') }}" id="button">Test your source code</a></p>
+<br/>
+<p>※ If this web page dosen't work, please let TA know as soon as possible.</p>
+{% endblock %}

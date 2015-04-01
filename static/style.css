@@ -1,0 +1,71 @@
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:400,700);
+
+body            { font-family: 'Open Sans'; background: #eee; }
+a, h1, h2       { color: #339933; }
+h1, h2          { font-family: 'Open Sans'; margin: 10; text-align: center; }
+h1              { border-bottom: 2px solid #eee; font-size:2.4em;}
+h2              { font-size: 1.2em; }
+table, td, th   { border: 1px solid green; }
+table           { width: 70%; margin-left:15%; margin-right:15%;}
+th              { background-color: green; color: white; font-size:1.2em;}
+td              { padding: 10px; }
+p               { text-align: center; }
+
+/* unvisited link */
+a:link {
+    color: #339933;
+    text-decoration: none;
+}
+
+/* visited link */
+a:visited {
+    color: #339933;
+    text-decoration: none;
+}
+
+/* mouse over link */
+a:hover {
+    color: #339933;
+    text-decoration: underline;
+}
+
+/* selected link */
+a:active {
+    color: #33CC33;
+    text-decoration: underline;
+}   
+
+table#t01 tr:nth-child(even) {
+        background-color: #eee;
+}
+table#t01 tr:nth-child(odd) {
+        background-color: #fff;
+}
+table#t01 th {
+    color: white;
+    background-color: #339933;
+}
+
+.page           { margin: 2em auto; width: 35em; border: 5px solid #ccc;
+padding: 0.8em; background: white; }
+.entries        { list-style: none; margin: 0; padding: 0; }
+.entries li     { margin: 0.8em 1.2em; }
+.entries li h2  { margin-left: -1em; }
+.add-entry      { font-size: 0.9em; border-bottom: 1px solid #ccc; }
+.add-entry dl   { font-weight: bold; }
+.metanav        { text-align: right; font-size: 0.8em; padding: 0.3em;
+    margin-bottom: 1em; background: #fafafa; }
+.flash          { 
+    background: #99CC66;
+    padding: 1.5em; 
+    border: 1px solid #339933;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.3em;
+}
+
+.error          { background: #F0D6D6; padding: 0.5em; }
+#rank           { text-align: center; font-weight: bold; }
+#id             { text-align: center; }
+#time           { text-align: right; }
+#button         { font-size: 1.3em; font-weight: bold; }
