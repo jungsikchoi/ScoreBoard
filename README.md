@@ -9,5 +9,6 @@ $ git clone https://github.com/jungsikchoi/ScoreBoard.git
 $ cd ScoreBoard
 $ virtualenv venv
 $ . venv/bin/activate
+$ pip install Flask
 $ python score_board.py
 ```
