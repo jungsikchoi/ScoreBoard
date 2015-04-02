@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block body %}
+<h2>Create your ID</h2>
+{% if error %}<p class=error><strong>Error:</strong> {{ error }}{% endif %}
+<div class=login>
+<form action="{{ url_for('login') }}" method=post>
+    <dl>
+        <dt>Your ID: <input type=text name=username> <input type=submit value=CREATE>
+    </dl>
+</form>
+</div>
+{% endblock %}
