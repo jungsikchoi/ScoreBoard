@@ -14,6 +14,8 @@ UPLOAD_FOLDER = 'source_code'
 ALLOWED_EXTENSIONS = set(['c', 'h'])
 DATABASE = 'score_board.db'
 ADDRESS = '115.145.178.206'
+DANGEROUS_FUNCS = set(['exec', 'execl', 'execlp', 'execle', 'execv',
+        'execve', 'execvp', 'execvpe', 'system'])
 
 
 # Create our application
@@ -63,6 +65,12 @@ def execute(_cmd):
     return fd.stdout, fd.stderr
 
 
+def delete_dir(_directory):
+    cmd = 'rm -rf ' + _directory
+    print ' >> ' + cmd
+    std_out, std_err = execute(cmd)
+    
+
 def allowed_file(filename):
     return '.' in filename and \
         filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
@@ -84,19 +92,41 @@ def add_entry(_id, _time):
 @app.route('/TestSource/<user_id>')
 def test_source(user_id):
     directory = UPLOAD_FOLDER + '/' + user_id
+
+    # Security test
+    for root, dirs, file_list in os.walk(directory):
+        pass
+
+    for file_name in file_list:
+        file_path = directory + '/' + file_name
+        test_file = open(file_path, 'r')
+        lines = test_file.readlines()
+        for line in lines:
+            for func_name in DANGEROUS_FUNCS:
+                expression = '\s*' + func_name +'\s*\('
+                re_compile = re.compile(expression)
+                re_search = re_compile.search(line)
+                if re_search:
+                    print ' >> dangerous func is founded!!' 
+                    print ' >> ' + line
+                    flash('Dangerous code has been found')
+                    delete_dir(directory)
+                    return redirect(url_for('show_entries'))
+    
+    # Copile
     cmd = 'gcc ' + directory + '/*.c '
     cmd += '-o ' + directory + '/nqueens'
+    print ' >> ' + cmd
     std_out, std_err = execute(cmd)
     result = 'NULL'
 
     for line in std_err.readlines() :
         if line.find('error') > 0:
             flash('Compile Error!!')
-            cmd = 'rm -rf ' + directory + '/*'
-            print ' >> ' + cmd
-            std_out, std_err = execute(cmd)
+            delete_dir(directory)
             return redirect(url_for('show_entries'))
 
+    # Measure the elapsed time
     cmd = 'time ' + directory + '/nqueens'
     print ' >> ' + cmd
     std_out, std_err = execute(cmd)
@@ -113,9 +143,7 @@ def test_source(user_id):
             pass
 
     # Delete files the test has been completed 
-    cmd = 'rm -rf ' + directory
-    print ' >> ' + cmd
-    std_out, std_err = execute(cmd)
+    delete_dir(directory)
 
     return add_entry(user_id, elapsed_time)
 
@@ -182,4 +210,4 @@ if __name__ == '__main__':
     init_db()
     app.debug = True
     app.secret_key='development key'
-    app.run(host=ADDRESS, port=80)
+    app.run(host=ADDRESS, port=8080)
