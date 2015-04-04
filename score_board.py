@@ -112,11 +112,11 @@ def test_source(user_id):
         except:
             pass
 
-    '''
-    cmd = 'rm -rf ' + directory + '/*'
+    # Delete files the test has been completed 
+    cmd = 'rm -rf ' + directory
     print ' >> ' + cmd
     std_out, std_err = execute(cmd)
-    '''
+
     return add_entry(user_id, elapsed_time)
 
 
