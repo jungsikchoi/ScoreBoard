@@ -10,11 +10,11 @@ To run this application, some programs are required as follows.
 First, download this source code
 ```
 $ git clone https://github.com/jungsikchoi/ScoreBoard.git
-$ cd ScoreBoard
 ```
 
 Second, make preparations
 ```
+$ cd ScoreBoard
 $ sudo apt-get install python-virtualenv
 $ virtualenv venv
 $ . venv/bin/activate
