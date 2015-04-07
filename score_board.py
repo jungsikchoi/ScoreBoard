@@ -7,6 +7,7 @@ from sqlite3 import dbapi2 as sqlite3
 import os
 import subprocess
 import re
+from database import Database
 
 
 # Configuration
@@ -18,46 +19,22 @@ DANGEROUS_FUNCS = set(['exec', 'execl', 'execlp', 'execle', 'execv',
         'execve', 'execvp', 'execvpe', 'system'])
 
 
+
 # Create our application
 app = Flask(__name__)
 
 
-def init_db():
-    """Initializes the database."""
-    with app.app_context():
-        db = get_db()
-        with app.open_resource('schema.sql') as f:
-            db.cursor().executescript(f.read())
-        db.commit()
-
-            
-def get_db():
-    """
-    Opens a new database connection if there is none yet for the
-    current application context.
-    """
-    top = _app_ctx_stack.top
-    if not hasattr(top, 'sqlite_db'):
-        top.sqlite_db = sqlite3.connect(DATABASE)
-    return top.sqlite_db
+# Create classes
+db = Database(app, DATABASE)
 
 
 @app.teardown_appcontext
 def close_connection(exception):
-    """Closes the database again at the end of the request."""
-    top = _app_ctx_stack.top
-    if hasattr(top, 'sqlite_db'):
-        top.sqlite_db.close()
-
-        
-def query_db(query, args=(), one=False):
-    cur = get_db().execute(query, args)
-    rv = cur.fetchall()
-    cur.close()
-    return (rv[0] if rv else None) if one else rv
+    db.close_connection()
 
 
 def execute(_cmd):
+    print ' EXE>> '
     fd = subprocess.Popen(_cmd, shell=True,
             stdin = subprocess.PIPE,
             stdout = subprocess.PIPE,
@@ -67,7 +44,6 @@ def execute(_cmd):
 
 def delete_dir(_directory):
     cmd = 'rm -rf ' + _directory
-    print ' >> ' + cmd
     std_out, std_err = execute(cmd)
     
 
@@ -77,14 +53,11 @@ def allowed_file(filename):
 
 
 def add_entry(_id, _time):
-    query = 'insert into entries (user_id, elapsed_time) '
-    query += 'values ("' + _id + '", ' + str(_time) + ')'
-    print ' >> ' + query
-    db = get_db()
-    db.execute(query)
-    db.commit()
-    msg = _id + '!!  '
-    msg += 'Your elapsed time is ' + str(_time) + 'sec'
+    if (db.insert_entry(_id, _time)):
+        msg = _id + '!!  '
+        msg += 'Your elapsed time is ' + str(_time) + 'sec'
+    else:
+        msg = 'DB Error'
     flash(msg)
     return redirect(url_for('show_entries'))
 
@@ -116,7 +89,6 @@ def test_source(user_id):
     # Copile
     cmd = 'gcc ' + directory + '/*.c '
     cmd += '-o ' + directory + '/nqueens'
-    print ' >> ' + cmd
     std_out, std_err = execute(cmd)
     result = 'NULL'
 
@@ -128,7 +100,6 @@ def test_source(user_id):
 
     # Measure the elapsed time
     cmd = 'time ' + directory + '/nqueens'
-    print ' >> ' + cmd
     std_out, std_err = execute(cmd)
 
     for line in std_err.readlines() :
@@ -181,11 +152,7 @@ def login():
             error = 'Enter a string!!'
             return render_template('login.html', error=error)
 
-        query = 'select user_id from entries'
-        print ' >> ' + query
-        db = get_db()
-        cur = db.execute(query)
-        existing_id_list = cur.fetchall()
+        existing_id_list = db.get_id_list()
 
         for existing_id in existing_id_list:
             if user_id == existing_id[0]:
@@ -198,16 +165,11 @@ def login():
 
 @app.route('/')
 def show_entries():
-    db = get_db()
-    query = 'select user_id, elapsed_time from entries order by elapsed_time limit 10'
-    print ' >> ' + query
-    cur = db.execute(query)
-    entries = [dict(user_id=row[0], elapsed_time=row[1]) for row in cur.fetchall()]
+    entries = db.get_entries()
     return render_template('show_entries.html', entries=entries)
 
 
 if __name__ == '__main__':
-    init_db()
     app.debug = True
     app.secret_key='development key'
     app.run(host=ADDRESS, port=8080)
