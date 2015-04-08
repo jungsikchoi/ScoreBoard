@@ -2,9 +2,9 @@
 {% block body %}
 <h2>{{ user_id }}!! Upload Your Source Code</h2>
 <ul>
-    <li>First, choose your source files and press the UPLOAD button. The allowed files are only .c and .h types.</li>
-    <li>Second, press the RUN button below and the test will be started.</li>
-    <li>And then, wait until the test is done. If there are some people waiting to test, It may take longer.</li>
+    <li>First, choose your source file and press the UPLOAD button. You can upload multiple files. The allowed files are only .c and .h types.</li>
+    <li>Second, press the REGISTER button below and the checking and compiling your codes will be started.</li>
+    <li>After the registration, you can confirm your score after a while.</li>
 </ul>
 <form action="" method=post enctype=multipart/form-data>
     <p><input type=file name=file>
@@ -21,5 +21,5 @@
 </div>
 {% endif %}
 <br/>
-<p><a href="{{ url_for('test_source', user_id = user_id) }}" id="button">RUN</a></p>
+<p><a href="{{ url_for('compile_source', user_id = user_id) }}" id="button">REGISTER</a></p>
 {% endblock %}

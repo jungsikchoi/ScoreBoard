@@ -8,6 +8,7 @@ import os
 import subprocess
 import re
 from database import Database
+from tester_thread import ProgramTester
 
 
 # Configuration
@@ -25,16 +26,19 @@ app = Flask(__name__)
 
 
 # Create classes
-db = Database(app, DATABASE)
+db = Database(DATABASE)
+tester = ProgramTester(db, UPLOAD_FOLDER)
 
 
+"""
 @app.teardown_appcontext
 def close_connection(exception):
     db.close_connection()
+"""
 
 
 def execute(_cmd):
-    print ' EXE>> '
+    print ' EXE>> ' + _cmd
     fd = subprocess.Popen(_cmd, shell=True,
             stdin = subprocess.PIPE,
             stdout = subprocess.PIPE,
@@ -52,18 +56,8 @@ def allowed_file(filename):
         filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
 
-def add_entry(_id, _time):
-    if (db.insert_entry(_id, _time)):
-        msg = _id + '!!  '
-        msg += 'Your elapsed time is ' + str(_time) + 'sec'
-    else:
-        msg = 'DB Error'
-    flash(msg)
-    return redirect(url_for('show_entries'))
-
-
-@app.route('/TestSource/<user_id>')
-def test_source(user_id):
+@app.route('/CompileSource/<user_id>')
+def compile_source(user_id):
     directory = UPLOAD_FOLDER + '/' + user_id
 
     # Security test
@@ -98,25 +92,19 @@ def test_source(user_id):
             delete_dir(directory)
             return redirect(url_for('show_entries'))
 
-    # Measure the elapsed time
-    cmd = 'time ' + directory + '/nqueens'
-    std_out, std_err = execute(cmd)
+    # Push this program to job queue
+    if tester.push_job(user_id):
+        msg = user_id + '!! Your program has been registered.\n'
+        msg += 'Please check your score after a while.'
+    else:
+        msg = 'Your program registration has failed.\n'
+        msg += 'Please try again.'
+    flash(msg)
 
-    for line in std_err.readlines() :
-        try:
-            re_compile = re.compile(r'^\d+\.\d+user\s+\d+\.\d+system\s+(?P<minute>\d+):(?P<second>\d+\.\d+)elapsed\s')
-            re_match = re_compile.match(line)
-            minute = float(re_match.group('minute'))
-            second = float(re_match.group('second'))
-            elapsed_time = minute * 60 + second
-            result = str(elapsed_time)
-        except:
-            pass
+    if not tester.running:
+        tester.start()
 
-    # Delete files the test has been completed 
-    delete_dir(directory)
-
-    return add_entry(user_id, elapsed_time)
+    return redirect(url_for('show_entries'))
 
 
 @app.route('/UploadSource/<user_id>', methods=['GET', 'POST'])
@@ -173,3 +161,5 @@ if __name__ == '__main__':
     app.debug = True
     app.secret_key='development key'
     app.run(host=ADDRESS, port=8080)
+    tester.run()
+
