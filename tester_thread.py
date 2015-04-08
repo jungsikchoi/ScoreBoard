@@ -56,7 +56,24 @@ class ProgramTester(threading.Thread):
         std_out, std_err = self.execute(cmd)
 
 
+    def accuracy_test(self, _directory):
+        nr_solutions = 0
+        test_file = open(_directory + '/result.out', 'r')
+        lines = test_file.readlines()
+        expression = '^\s*\#\s*(?P<number>\d+)'
+        re_compile = re.compile(expression)
 
+        for line in lines:
+            re_match = re_compile.match(line)
+            if re_match:
+                nr_solutions = int(re_match.group('number'))
+
+        if nr_solutions == 264:
+            return True
+        else:
+            return False
+                
+            
     def run(self):
         self.running = True
         print 'tester thread is started!!'
@@ -67,7 +84,8 @@ class ProgramTester(threading.Thread):
 
                 # Measure the elapsed time
                 directory = self.base_dir + '/' + job
-                cmd = 'time ' + directory + '/nqueens'
+                cmd = 'time ' + directory + '/nqueens 11 > '
+                cmd += directory + '/result.out'
                 std_out, std_err = self.execute(cmd)
                 std_err = std_err.strip()
 
@@ -85,12 +103,16 @@ class ProgramTester(threading.Thread):
                     print 'TEST>> Error'
 
                 else:
+                    accuracy = self.accuracy_test(directory)
                     # Delete files the test has been completed 
                     self.delete_dir(directory)
 
-                    # Record the result
-                    self.db.insert_entry(job, elapsed_time)
-                    print 'TEST>> ' + job + ', ' + str(elapsed_time)
+                    if accuracy:
+                        # Record the result
+                        self.db.insert_entry(job, elapsed_time)
+                        print 'TEST>> ' + job + ', ' + str(elapsed_time)
+                    else:
+                        print 'TEST>> The result is wrong.'
 
             time.sleep(10)
             
