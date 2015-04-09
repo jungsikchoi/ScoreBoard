@@ -8,7 +8,7 @@ import os
 import subprocess
 import re
 from database import Database
-from tester_thread import ProgramTester
+#from tester_thread import ProgramTester
 
 
 # Configuration
@@ -29,8 +29,7 @@ app = Flask(__name__)
 
 # Create classes
 db = Database(DATABASE)
-tester = ProgramTester(db, UPLOAD_FOLDER, 
-        VERIFY_N, EXAMPLE_PATH)
+#tester = ProgramTester(db, UPLOAD_FOLDER, VERIFY_N, EXAMPLE_PATH)
 
 
 """
@@ -99,16 +98,14 @@ def compile_source(user_id):
             return redirect(url_for('show_entries'))
 
     # Push this program to job queue
-    if tester.push_job(user_id):
-        msg = user_id + '!! Your program has been registered.\n'
-        msg += 'Please check your score after a while.'
-    else:
-        msg = 'Your program registration has failed.\n'
-        msg += 'Please try again.'
+    msg = user_id + '!! Your program has been registered.\n'
+    msg += 'Please check your score after a while.'
     flash(msg)
 
+    """
     if not tester.running:
         tester.start()
+    """
 
     return redirect(url_for('show_entries'))
 
@@ -136,9 +133,9 @@ def upload_source(user_id):
     return render_template('upload_source.html', file_list=file_list, user_id=user_id)
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/Login', methods=['GET', 'POST'])
 def login():
-    print '/login'
+    print '/Login'
     error = None
 
     if request.method == 'POST':
@@ -171,9 +168,24 @@ def login():
                 error = user_id + ' is already in use. Type a different ID'
                 return render_template('login.html', error=error)
 
+        existing_id_list = db.get_id_list_from_err()
+
+        for existing_id in existing_id_list:
+            if user_id == existing_id[0]:
+                error = user_id + ' is already in use. Type a different ID'
+                return render_template('login.html', error=error)
+
         return redirect(url_for('upload_source', user_id = user_id))
     return render_template('login.html', error=error)
 
+
+@app.route('/FullList')
+def show_full_entries():
+    print '/FullList'
+    entries = db.get_full_entries()
+    error_logs = db.get_error_logs()
+    return render_template('show_full_entries.html', 
+            entries=entries, error_logs=error_logs)
 
 @app.route('/')
 def show_entries():
@@ -186,5 +198,5 @@ if __name__ == '__main__':
     app.debug = True
     app.secret_key='development key'
     app.run(host=ADDRESS, port=8080)
-    tester.run()
+    #tester.run()
 

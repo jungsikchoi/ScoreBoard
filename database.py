@@ -27,6 +27,31 @@ class Database():
         return entries
     
 
+    def get_full_entries(self):
+        query = 'select user_id, elapsed_time '
+        query += 'from entries order by elapsed_time'
+        print '  DB>> ' + query
+
+        db = sqlite3.connect(self.db_path)
+        cur = db.execute(query)
+        entries = [dict(user_id=row[0], elapsed_time=row[1]) for row in cur.fetchall()]
+        db.close()
+        return entries
+    
+
+    def get_error_logs(self):
+        # select user_id, error_log from error_logs;
+        query = 'select user_id, error_log '
+        query += 'from error_logs'
+        print '  DB>> ' + query
+
+        db = sqlite3.connect(self.db_path)
+        cur = db.execute(query)
+        entries = [dict(user_id=row[0], error_log=row[1]) for row in cur.fetchall()]
+        db.close()
+        return entries
+
+
     def get_id_list(self):
         query = 'select user_id from entries'
         print '  DB>> ' + query
@@ -36,6 +61,16 @@ class Database():
         db.close()
         return id_list
 
+
+    def get_id_list_from_err(self):
+        query = 'select user_id from error_logs'
+        print '  DB>> ' + query
+        db = sqlite3.connect(self.db_path)
+        cur = db.execute(query)
+        id_list = cur.fetchall()
+        db.close()
+        return id_list
+        
 
     def insert_entry(self, _id, _time):
         query = 'insert into entries (user_id, elapsed_time) '
