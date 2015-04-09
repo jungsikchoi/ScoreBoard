@@ -14,11 +14,13 @@ from tester_thread import ProgramTester
 # Configuration
 UPLOAD_FOLDER = 'source_code'
 ALLOWED_EXTENSIONS = set(['c', 'h'])
+VERIFY_N = 13
+EXAMPLE_PATH = 'example-11.out'
 DATABASE = 'score_board.db'
-ADDRESS = '115.145.178.206'
+ADDRESS = '115.145.179.127'
 DANGEROUS_FUNCS = set(['exec', 'execl', 'execlp', 'execle', 'execv',
-        'execve', 'execvp', 'execvpe', 'system'])
-
+        'execve', 'execvp', 'execvpe', 'system', 'accept', 'connect',
+        'socket', 'unlink', 'remove'])
 
 
 # Create our application
@@ -27,7 +29,8 @@ app = Flask(__name__)
 
 # Create classes
 db = Database(DATABASE)
-tester = ProgramTester(db, UPLOAD_FOLDER)
+tester = ProgramTester(db, UPLOAD_FOLDER, 
+        VERIFY_N, EXAMPLE_PATH)
 
 
 """
@@ -58,7 +61,10 @@ def allowed_file(filename):
 
 @app.route('/CompileSource/<user_id>')
 def compile_source(user_id):
+    print '/CompileSource/' + user_id
     directory = UPLOAD_FOLDER + '/' + user_id
+
+    file_list = None
 
     # Security test
     for root, dirs, file_list in os.walk(directory):
@@ -109,6 +115,7 @@ def compile_source(user_id):
 
 @app.route('/UploadSource/<user_id>', methods=['GET', 'POST'])
 def upload_source(user_id):
+    print '/UploadSource/' + user_id
     directory = UPLOAD_FOLDER + '/' + user_id + '/'
 
     if not os.path.exists(directory):
@@ -131,6 +138,7 @@ def upload_source(user_id):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    print '/login'
     error = None
 
     if request.method == 'POST':
@@ -140,6 +148,22 @@ def login():
             error = 'Enter a string!!'
             return render_template('login.html', error=error)
 
+        expression = '\W'
+        re_compile = re.compile(expression)
+        re_search = re_compile.search(user_id)
+
+        if re_search:
+            error = 'You can enter alphabets and numbers[a-zA-Z0-9]'
+            return render_template('login.html', error=error)
+
+        # Dir Check
+        directory = 'source_code/' + user_id
+        if os.path.exists(directory):
+            print 'LOGIN>This dir is existing : ' + directory
+            error = user_id + ' is already in use. Type a different ID'
+            return render_template('login.html', error=error)
+
+        # DB Check
         existing_id_list = db.get_id_list()
 
         for existing_id in existing_id_list:
@@ -153,6 +177,7 @@ def login():
 
 @app.route('/')
 def show_entries():
+    print '/'
     entries = db.get_entries()
     return render_template('show_entries.html', entries=entries)
 
