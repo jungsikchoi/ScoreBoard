@@ -1,5 +1,5 @@
 # ScoreBoard
-This simple web application provides a scoreboard.
+This simple web application provides a scoreboard. Users can upload their source code onto this web application. And then it compiles and runs uploaded source code. When the program is finished, it verifies the output of the program. If the result is accurate, it's going to record the elapsed time of the program in the scoreboard.
 
 ### HOW TO INSTALL & RUN
 To run this application, some programs are required as follows.
