@@ -26,4 +26,5 @@ $ . venv/bin/activate
 Finally, run
 ```
 (venv)$ python score_board.py
+(venv)$ python tester.py
 ```
